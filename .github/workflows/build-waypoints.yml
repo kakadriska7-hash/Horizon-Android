@@ -17,7 +17,10 @@ jobs:
         run: cargo install --path crates/cargo-horizon-mod
       - name: Build HMOD
         working-directory: mods/waypoints
-        run: cargo horizon-mod build
+        run: |
+          rm -f Cargo.toml
+          cargo horizon-mod --help
+          cargo horizon-mod build
       - uses: actions/upload-artifact@v4
         with:
           name: waypoints-hmod
