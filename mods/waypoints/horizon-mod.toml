@@ -1,0 +1,9 @@
+id = "waypoints"
+name = "Waypoints 3D"
+version = "1.1.0"
+description = "Floating 3D diamond waypoints with customizable crystal color, name and distance badge."
+authors = ["Custom"]
+api = "0.1"
+side = "client"
+capabilities = ["game-read", "chat", "render", "storage", "ui"]
+experimental = ["render"]
