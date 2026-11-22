@@ -306,6 +306,16 @@ impl WaypointsMod {
 
         if let Some(pos) = self.points.iter().position(|p| p.name.eq_ignore_ascii_case(&name)) {
             self.points[pos] = Waypoint {
+self.refresh_settings_ui();
+}
+fn ui_select(&mut self, id: u32, row: u32) {
+match id {
+BTN_SAVE_HERE => {
+if let Ok(msg) = self.add_current(None) {
+chat::show(&msg);
+}
+}
+LIST_WAYPOINTS => {
 let idx = row as usize;
 if idx < self.points.len() {
 self.selected = Some(idx);
