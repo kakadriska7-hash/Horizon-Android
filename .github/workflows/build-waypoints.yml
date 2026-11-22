@@ -10,9 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
+      - name: Add wasm target
+        run: rustup target add wasm32-unknown-unknown
       - name: Install wasm-tools
         run: cargo install wasm-tools
       - name: Build WASM & HMOD
