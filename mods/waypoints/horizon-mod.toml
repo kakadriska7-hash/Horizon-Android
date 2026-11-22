@@ -6,4 +6,4 @@ authors = ["Custom"]
 api = "0.1"
 side = "client"
 capabilities = ["game-read", "chat", "render", "storage", "ui"]
-experimental = ["render"]
+experimental = ["render", "ui"]
