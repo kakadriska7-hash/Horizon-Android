@@ -1,6 +1,9 @@
 name: Build Waypoints HMOD
 on:
-  workflow_dispatch:
+  push:
+    paths:
+      - 'mods/waypoints/**'
+      - '.github/workflows/build-waypoints.yml'
 
 jobs:
   build:
