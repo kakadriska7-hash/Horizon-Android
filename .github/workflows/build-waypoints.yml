@@ -13,15 +13,15 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
-      - name: Install cargo-horizon-mod
-        run: cargo install --path crates/cargo-horizon-mod
-      - name: Build HMOD
+      - name: Install wasm-tools
+        run: cargo install wasm-tools
+      - name: Build WASM & HMOD
         working-directory: mods/waypoints
         run: |
-          rm -f Cargo.toml
-          cargo horizon-mod --help
-          cargo horizon-mod build
+          cargo build --target wasm32-unknown-unknown --release
+          wasm-tools component new target/wasm32-unknown-unknown/release/waypoints.wasm -o waypoints.hmod
+          ls -lh waypoints.hmod
       - uses: actions/upload-artifact@v4
         with:
           name: waypoints-hmod
-          path: "**/*.hmod"
+          path: mods/waypoints/waypoints.hmod
