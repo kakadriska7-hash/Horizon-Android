@@ -303,11 +303,234 @@ impl WaypointsMod {
         let x = player.x.floor() as i32;
         let y = player.y.floor() as i32;
         let z = player.z.floor() as i32;
-
         if let Some(pos) = self.points.iter().position(|p| p.name.eq_ignore_ascii_case(&name)) {
             self.points[pos] = Waypoint {
-self.refresh_settings_ui();
+                name: name.clone(),
+                x,
+                y,
+                z,
+                dimension: player.dimension,
+            };
+            self.selected = Some(pos);
+        } else {
+            self.points.push(Waypoint {
+                name: name.clone(),
+                x,
+                y,
+                z,
+                dimension: player.dimension,
+            });
+            self.selected = Some(self.points.len() - 1);
+        }
+
+        self.visible = true;
+        self.save();
+        self.render_waypoints();
+        Ok(format!("Saved '{}' at {}, {}, {}", name, x, y, z))
+    }
 }
+
+impl Mod for WaypointsMod {
+    fn init() -> Result<(Self, Registration), String> {
+        let m = Self::load();
+        m.refresh_settings_ui();
+        Ok((m, Registration::new().command("wp").on_frame()))
+    }
+
+    fn frame(&mut self, _seconds: f32) {
+        self.render_waypoints();
+    }
+
+    fn command(&mut self, _name: &str, args: &str) -> Result<Option<String>, String> {
+        let mut parts = args.trim().splitn(2, ' ');
+        let sub = parts.next().unwrap_or("").to_lowercase();
+        let rest = parts.next().unwrap_or("").trim();
+
+        match sub.as_str() {
+            "add" => {
+                let msg = self.add_current(Some(rest.to_string()))?;
+                Ok(Some(msg))
+            }
+            "list" => {
+                if self.points.is_empty() {
+                    return Ok(Some("No waypoints saved.".into()));
+                }
+                for (i, wp) in self.points.iter().enumerate() {
+                    chat::show(&format!(
+                        "{}. {} ({}, {}, {})",
+                        i + 1,
+                        wp.name,
+                        wp.x,
+                        wp.y,
+                        wp.z
+                    ));
+                }
+                Ok(None)
+            }
+            "del" | "delete" | "remove" => {
+                if rest.is_empty() {
+                    return Err("Usage: /wp del <name>".into());
+                }
+                let pos = self
+                    .points
+                    .iter()
+                    .position(|p| p.name.eq_ignore_ascii_case(rest))
+                    .ok_or_else(|| format!("Waypoint '{}' not found", rest))?;
+                let removed = self.points.remove(pos);
+                self.selected = if self.points.is_empty() { None } else { Some(0) };
+                self.save();
+                self.render_waypoints();
+                Ok(Some(format!("Deleted '{}'", removed.name)))
+            }
+            "color" => {
+                if rest.is_empty() {
+                    self.color_idx = (self.color_idx + 1) % CRYSTAL_COLORS.len();
+                } else {
+                    let pos = CRYSTAL_COLORS
+                        .iter()
+                        .position(|c| c.0.eq_ignore_ascii_case(rest))
+                        .ok_or("Colors: green, cyan, red, gold, purple, pink, blue, white")?;
+                    self.color_idx = pos;
+                }
+                self.save();
+                self.render_waypoints();
+                Ok(Some(format!("Crystal color: {}", CRYSTAL_COLORS[self.color_idx].0)))
+            }
+            "toggle" | "on" | "off" => {
+                self.visible = match sub.as_str() {
+                    "on" => true,
+                    "off" => false,
+                    _ => !self.visible,
+                };
+                self.save();
+                self.render_waypoints();
+                Ok(Some(format!(
+                    "Waypoints {}",
+                    if self.visible { "enabled" } else { "hidden" }
+                )))
+            }
+            _ => Err("Commands: /wp add <name>, /wp list, /wp del <name>, /wp color <name>, /wp toggle".into()),
+        }
+    }
+
+    fn ui_settings_opened(&mut self) {
+        self.refresh_settings_ui();
+    }
+        if let Some(pos) = self.points.iter().position(|p| p.name.eq_ignore_ascii_case(&name)) {
+            self.points[pos] = Waypoint {
+                name: name.clone(),
+                x,
+                y,
+                z,
+                dimension: player.dimension,
+            };
+            self.selected = Some(pos);
+        } else {
+            self.points.push(Waypoint {
+                name: name.clone(),
+                x,
+                y,
+                z,
+                dimension: player.dimension,
+            });
+            self.selected = Some(self.points.len() - 1);
+        }
+
+        self.visible = true;
+        self.save();
+        self.render_waypoints();
+        Ok(format!("Saved '{}' at {}, {}, {}", name, x, y, z))
+    }
+}
+
+impl Mod for WaypointsMod {
+    fn init() -> Result<(Self, Registration), String> {
+        let m = Self::load();
+        m.refresh_settings_ui();
+        Ok((m, Registration::new().command("wp").on_frame()))
+    }
+
+    fn frame(&mut self, _seconds: f32) {
+        self.render_waypoints();
+    }
+
+    fn command(&mut self, _name: &str, args: &str) -> Result<Option<String>, String> {
+        let mut parts = args.trim().splitn(2, ' ');
+        let sub = parts.next().unwrap_or("").to_lowercase();
+        let rest = parts.next().unwrap_or("").trim();
+
+        match sub.as_str() {
+            "add" => {
+                let msg = self.add_current(Some(rest.to_string()))?;
+                Ok(Some(msg))
+            }
+            "list" => {
+                if self.points.is_empty() {
+                    return Ok(Some("No waypoints saved.".into()));
+                }
+                for (i, wp) in self.points.iter().enumerate() {
+                    chat::show(&format!(
+                        "{}. {} ({}, {}, {})",
+                        i + 1,
+                        wp.name,
+                        wp.x,
+                        wp.y,
+                        wp.z
+                    ));
+                }
+                Ok(None)
+            }
+            "del" | "delete" | "remove" => {
+                if rest.is_empty() {
+                    return Err("Usage: /wp del <name>".into());
+                }
+                let pos = self
+                    .points
+                    .iter()
+                    .position(|p| p.name.eq_ignore_ascii_case(rest))
+                    .ok_or_else(|| format!("Waypoint '{}' not found", rest))?;
+                let removed = self.points.remove(pos);
+                self.selected = if self.points.is_empty() { None } else { Some(0) };
+                self.save();
+                self.render_waypoints();
+                Ok(Some(format!("Deleted '{}'", removed.name)))
+            }
+            "color" => {
+                if rest.is_empty() {
+                    self.color_idx = (self.color_idx + 1) % CRYSTAL_COLORS.len();
+                } else {
+                    let pos = CRYSTAL_COLORS
+                        .iter()
+                        .position(|c| c.0.eq_ignore_ascii_case(rest))
+                        .ok_or("Colors: green, cyan, red, gold, purple, pink, blue, white")?;
+                    self.color_idx = pos;
+                }
+                self.save();
+                self.render_waypoints();
+                Ok(Some(format!("Crystal color: {}", CRYSTAL_COLORS[self.color_idx].0)))
+            }
+            "toggle" | "on" | "off" => {
+                self.visible = match sub.as_str() {
+                    "on" => true,
+                    "off" => false,
+                    _ => !self.visible,
+                };
+                self.save();
+                self.render_waypoints();
+                Ok(Some(format!(
+                    "Waypoints {}",
+                    if self.visible { "enabled" } else { "hidden" }
+                )))
+            }
+            _ => Err("Commands: /wp add <name>, /wp list, /wp del <name>, /wp color <name>, /wp toggle".into()),
+        }
+    }
+
+    fn ui_settings_opened(&mut self) {
+        self.refresh_settings_ui();
+    }
+
+        
 fn ui_select(&mut self, id: u32, row: u32) {
 match id {
 BTN_SAVE_HERE => {
